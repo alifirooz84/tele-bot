@@ -1,31 +1,37 @@
 <?php
 
-$bot_token = "7956714963:AAHnybhfhA3c0d7C1VJnXIHhbR-fkeTsXfI"
+// 1. توکن رباتت رو اینجا بذار
+$bot_token = '7956714963:AAHnybhfhA3c0d7C1VJnXIHhbR-fkeTsXfI';
 $api_url = "https://api.telegram.org/bot$bot_token/";
 
+// 2. گرفتن داده ورودی از تلگرام
 $content = file_get_contents("php://input");
 $update = json_decode($content, true);
 
+// برای تست لاگ بفرستیم (اختیاری)
+file_put_contents("log.txt", json_encode($update));
+
+// 3. اگر پیام وجود داشت، بررسیش کن
 if (isset($update["message"])) {
     $message = $update["message"];
     $chat_id = $message["chat"]["id"];
 
-    // اگر کاربر شماره ارسال کرد
+    // اگر کاربر شماره تماسش رو فرستاد
     if (isset($message["contact"])) {
         $phone = $message["contact"]["phone_number"];
         sendPhoneToWordpress($phone);
         sendMessage($chat_id, "شماره شما با موفقیت ثبت شد ✅");
     }
 
-    // اگر کاربر نوشت /start
+    // اگر کاربر /start فرستاد
     if (isset($message["text"]) && $message["text"] === "/start") {
         sendKeyboard($chat_id);
     }
 }
 
-// تابع ارسال شماره به وردپرس
+// 4. ارسال شماره به سایت وردپرس
 function sendPhoneToWordpress($phone) {
-    $url = 'https://pestehiran.shop/?receive-phone=1'; // 👈 آدرس سایت خودت
+    $url = 'https://pestehiran.shop/?receive-phone=1'; // آدرس هدف وردپرس
 
     $data = ['phone' => $phone];
     $options = [
@@ -40,13 +46,13 @@ function sendPhoneToWordpress($phone) {
     file_get_contents($url, false, $context);
 }
 
-// ارسال پیام متنی به کاربر
+// 5. ارسال پیام ساده به کاربر
 function sendMessage($chat_id, $text) {
     global $api_url;
     file_get_contents($api_url . "sendMessage?chat_id=$chat_id&text=" . urlencode($text));
 }
 
-// کیبورد برای درخواست شماره
+// 6. نمایش کیبورد برای دریافت شماره
 function sendKeyboard($chat_id) {
     global $api_url;
 
